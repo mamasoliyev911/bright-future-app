@@ -1,0 +1,251 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Tizimi - O'qituvchilar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* MODAL VA QO'SHIMCHA STYLLAR */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(3px);
+        }
+        .modal-box {
+            background: white; width: 420px; padding: 25px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: zoomIn 0.2s ease;
+        }
+        @keyframes zoomIn { from {transform: scale(0.9); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+        
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 13px; margin-bottom: 5px; color: #666; font-weight: 600; }
+        .input-group input, .input-group select { 
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none;
+        }
+        .input-group input:focus { border-color: #a91b2e; }
+
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-save { background: #a91b2e; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-cancel { background: #eee; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+
+        /* KARTADAGI FAN (SUBJECT) STILI */
+        .t-subject {
+            display: inline-block; background: #fff0f1; color: #a91b2e;
+            padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;
+            margin-bottom: 5px; text-transform: uppercase;
+        }
+        .card-actions { display: flex; gap: 10px; }
+        .edit-btn { cursor: pointer; color: #666; transition: 0.2s; }
+        .edit-btn:hover { color: #a91b2e; }
+        .del-btn { cursor: pointer; color: #ccc; transition: 0.2s; }
+        .del-btn:hover { color: #ff4d4d; }
+
+        /* --- RESPONSIVE DIZAYN --- */
+
+/* Planshetlar uchun (max-width: 992px) */
+/* --- TO'G'IRLANGAN RESPONSIVE DIZAYN --- */
+
+/* Planshetlar uchun (max-width: 992px) */
+/* --- TO'G'IRLANGAN RESPONSIVE DIZAYN --- */
+
+/* Planshetlar uchun (768px - 1024px) */
+@media (max-width: 1024px) {
+    :root { --sidebar-width: 80px; }
+    .sidebar .menu-item span { display: none; } /* Matnni yashirish */
+    .sidebar .menu-item i { font-size: 24px; }
+    .teachers-grid { grid-template-columns: repeat(2, 1fr); } /* 2 tadan kartochka */
+}
+
+/* Telefonlar uchun (max-width: 768px) */
+@media (max-width: 768px) {
+    body { flex-direction: column; overflow-y: auto; height: auto; }
+
+    /* Sidebar -> Bottom Navigation */
+    .sidebar {
+        position: fixed; bottom: 0; left: 0; width: 100%; height: 65px;
+        flex-direction: row; padding: 0; border-right: none;
+        border-top: 1px solid #ddd; z-index: 2000;
+    }
+    .sidebar .brand { display: none; }
+    .sidebar .menu-item {
+        flex: 1; padding: 10px 0; border-left: none;
+        border-top: 3px solid transparent; flex-direction: column;
+    }
+    .sidebar .menu-item.active { border-top-color: #a91b2e; border-left: none; }
+    .sidebar .menu-item span { display: block; font-size: 10px; }
+
+    /* Main Content */
+    .main-content { margin-left: 0 !important; width: 100%; }
+    
+    header {
+        padding: 15px; flex-direction: column; height: auto; gap: 10px;
+    }
+    .header-left { width: 100%; flex-direction: column; align-items: stretch; }
+    .search-box { width: 100% !important; margin-left: 0; }
+    .header-right { display: none; } /* Keraksiz elementlarni telefonda yashirish */
+
+    .content-body { padding: 15px; padding-bottom: 80px; } /* Bottom nav uchun joy */
+
+    /* Grid va Page Header */
+    .page-header { flex-direction: column; gap: 15px; align-items: stretch; }
+    .btn-add { width: 100%; justify-content: center; padding: 12px; }
+    
+    .teachers-grid { grid-template-columns: 1fr; } /* Kartochkalar bittadan */
+
+    /* Modal Mobile */
+    .modal-box { width: 92%; padding: 20px; }
+}
+    </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="brand">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" width="30px">
+    </div>
+    
+    <a href="{% url 'lids' %}" class="menu-item {% if request.resolver_match.url_name == 'lids' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i> <span>Lidlar</span>
+    </a>
+    
+    <a href="{% url 'home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-user-tie"></i> <span>Ustozlar</span>
+    </a>
+    
+    <a href="{% url 'notes' %}" class="menu-item {% if request.resolver_match.url_name == 'notes' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i> <span>Eslatmalar</span>
+    </a>
+
+    <a href="{% url 'statistics' %}" class="menu-item {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line"></i> <span>Statistika</span>
+    </a>
+
+    {% if user.is_superuser %}
+    <a href="/admin/" target="_blank" class="menu-item" style="color: #1e293b;">
+        <i class="fa-solid fa-user-shield"></i> <span>Admin</span>
+    </a>
+    {% endif %}
+
+    <a href="{% url 'logout' %}" class="menu-item" style="margin-top: auto;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>Chiqish</span>
+    </a>
+</div>
+
+    <div class="main-content">
+        <header>
+            <div class="header-left">
+                <h3>O'qituvchilar</h3>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Qidiruv (ism yoki fan)...">
+                </div>
+            </div>
+            <div class="header-right">
+                <span>UZ</span>
+                <i class="fa-regular fa-bell"></i>
+                <div class="profile-img"><i class="fa-solid fa-user"></i></div>
+            </div>
+        </header>
+
+       <div class="content-body">
+    <div class="page-header">
+        <div class="page-title">
+            <h2>Ro'yxat <span id="count">Miqdor — {{ teachers.count }}</span></h2>
+        </div>
+        <button class="btn-add" onclick="openAddModal()">Yangisini qo'shish</button>
+    </div>
+
+    <div class="teachers-grid" id="teachersList">
+        {% for t in teachers %}
+        <div class="card" data-name="{{ t.name|lower }}" data-subject="{{ t.subject|lower }}">
+            <div class="card-info">
+                <div class="t-subject">{{ t.subject|default:'Noaniq' }}</div>
+                <div class="t-name">{{ t.name }}</div>
+                <div class="t-phone"><i class="fa-solid fa-phone" style="font-size:10px"></i> {{ t.phone }}</div>
+                <div class="t-group">{{ t.groups_count }} guruh</div>
+            </div>
+            <div class="card-actions">
+                <i class="fa-solid fa-pen-to-square edit-btn" 
+                   onclick="openEditModal('{{ t.id }}', '{{ t.name }}', '{{ t.subject }}', '{{ t.phone }}', '{{ t.groups_count }}')" title="Tahrirlash"></i>
+                <a href="{% url 'delete_teacher' t.id %}" onclick="return confirm('Ochirishga aminmisiz?')">
+                    <i class="fa-solid fa-trash-can del-btn" title="O'chirish"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal-overlay" id="teacherModal">
+    <form action="{% url 'save_teacher' %}" method="POST" class="modal-box">
+        {% csrf_token %}
+        <div class="modal-header"><h3>O'qituvchi ma'lumoti</h3></div>
+        <div class="modal-body">
+            <input type="hidden" name="edit_id" id="editIndex" value="-1">
+            <div class="input-group">
+                <label>Ism Familiya</label>
+                <input type="text" name="name" id="tName" required>
+            </div>
+            <div class="input-group">
+                <label>Fani (Yo'nalishi)</label>
+                <input type="text" name="subject" id="tSubject">
+            </div>
+            <div class="input-group">
+                <label>Telefon</label>
+                <input type="text" name="phone" id="tPhone">
+            </div>
+            <div class="input-group">
+                <label>Guruhlar soni</label>
+                <input type="number" name="groups" id="tGroups">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeModal()">Bekor qilish</button>
+            <button type="submit" class="btn-save">Saqlash</button>
+        </div>
+    </form>
+</div>
+
+    <script>
+        // 13 ta o'qituvchi + fanlar qo'shilgan holda
+       const modal = document.getElementById('teacherModal');
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.card');
+
+function openAddModal() {
+    document.getElementById('editIndex').value = "-1";
+    document.getElementById('tName').value = "";
+    document.getElementById('tSubject').value = "";
+    document.getElementById('tPhone').value = "";
+    document.getElementById('tGroups').value = "";
+    modal.style.display = 'flex';
+}
+
+function openEditModal(id, name, subject, phone, groups) {
+    document.getElementById('editIndex').value = id;
+    document.getElementById('tName').value = name;
+    document.getElementById('tSubject').value = subject;
+    document.getElementById('tPhone').value = phone;
+    document.getElementById('tGroups').value = groups;
+    modal.style.display = 'flex';
+}
+
+function closeModal() { modal.style.display = 'none'; }
+
+// Qidiruv (Filtrlash)
+searchInput.addEventListener('input', (e) => {
+    const v = e.target.value.toLowerCase();
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        const subject = card.getAttribute('data-subject');
+        card.style.display = (name.includes(v) || subject.includes(v)) ? 'flex' : 'none';
+    });
+});
+    </script>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

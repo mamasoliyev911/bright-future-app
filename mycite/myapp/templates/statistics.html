@@ -1,0 +1,419 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistika - BRIGHT FUTURE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-red: #a91b2e;
+            --bg-light: #f4f6f9;
+            --text-dark: #1e293b;
+            --sidebar-width: 90px;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-light); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width); background: white; border-right: 1px solid #ddd;
+            display: flex; flex-direction: column; align-items: center; padding-top: 20px;
+            flex-shrink: 0;
+        }
+        .brand img { margin-bottom: 20px; }
+        .menu-item {
+            width: 100%; display: flex; flex-direction: column; align-items: center; padding: 15px 0;
+            color: #777; text-decoration: none; font-size: 11px; transition: 0.3s;
+        }
+        .menu-item i { font-size: 20px; margin-bottom: 5px; }
+        .menu-item:hover { color: var(--primary-red); }
+        .menu-item.active { color: var(--primary-red); background: #fff5f5; border-left: 3px solid var(--primary-red); }
+
+        /* Main Layout */
+        .main-content { flex: 1; display: flex; overflow: hidden; }
+
+        /* Left Side: Month Selector */
+        .months-sidebar {
+            width: 180px; background: white; border-right: 1px solid #eee; padding: 20px;
+            overflow-y: auto; flex-shrink: 0;
+        }
+        .months-sidebar h4 { margin-bottom: 15px; font-size: 13px; color: var(--text-dark); text-transform: uppercase; }
+        .month-btn {
+            width: 100%; padding: 10px 12px; margin-bottom: 5px; border-radius: 8px;
+            border: none; background: transparent; text-align: left; cursor: pointer;
+            color: #64748b; font-size: 14px; transition: 0.2s;
+        }
+        .month-btn:hover { background: #f8fafc; color: var(--primary-red); }
+        .month-btn.active { background: var(--primary-red); color: white; }
+
+        /* Dashboard Area */
+        .dashboard { flex: 1; padding: 25px; overflow-y: auto; }
+        .header-title { margin-bottom: 20px; }
+        .header-title h2 { font-size: 22px; color: var(--text-dark); }
+
+        /* Mini Stats */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;
+        }
+        .mini-card {
+            background: white; padding: 15px 20px; border-radius: 12px; box-shadow: var(--card-shadow);
+            display: flex; align-items: center; gap: 15px;
+        }
+        .mini-card i { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .mini-card h3 { font-size: 20px; color: var(--text-dark); }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 20px; height: 360px;
+        }
+        .chart-box {
+            background: white; padding: 20px; border-radius: 15px; box-shadow: var(--card-shadow);
+            display: flex; flex-direction: column;
+        }
+        .chart-header { margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .chart-header h3 { font-size: 16px; color: var(--text-dark); }
+        .chart-container { flex: 1; position: relative; min-height: 0; }
+
+        
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand"><img src="{% static 'img/logo.png' %}" width="30"></div>
+        <a href="{% url 'lids' %}" class="menu-item"><i class="fa-solid fa-users"></i><span>Lidlar</span></a>
+        <a href="{% url 'home' %}" class="menu-item"><i class="fa-solid fa-user-tie"></i><span>Ustozlar</span></a>
+        <a href="{% url 'notes' %}" class="menu-item"><i class="fa-solid fa-bell"></i><span>Eslatmalar</span></a>
+        <a href="#" class="menu-item active"><i class="fa-solid fa-chart-line"></i><span>Statistika</span></a>
+        <a href="{% url 'logout' %}" class="menu-item" style="margin-top:auto;"><i class="fa-solid fa-right-from-bracket"></i><span>Chiqish</span></a>
+    </div>
+
+<style>
+    /* ... (Sizdagi mavjud CSS kodlari) ... */
+
+    /* Dashboard ichidagi scrollni to'g'rilash */
+    .dashboard { 
+        flex: 1; 
+        padding: 25px; 
+        overflow-y: auto; 
+        background-color: var(--bg-light);
+    }
+
+    /* KPI jadvali uchun maxsus stil */
+    .kpi-section {
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    table thead th {
+        background-color: #f8fafc;
+        padding: 12px 15px;
+        text-align: left;
+        font-size: 13px;
+        color: #64748b;
+        border-bottom: 2px solid #edf2f7;
+    }
+
+    table tbody tr {
+        transition: background 0.2s;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    table tbody tr:hover {
+        background-color: #fcfcfd;
+    }
+
+    table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    /* Progress bar chiroyliroq ko'rinishi uchun */
+    .progress-container {
+        display: flex; 
+        align-items: center; 
+        gap: 12px;
+        min-width: 150px;
+    }
+
+    .progress-bar-bg {
+        flex-grow: 1; 
+        height: 6px; 
+        background: #e2e8f0; 
+        border-radius: 10px; 
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%; 
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+    }
+    /* --- RESPONSIVE DESIGN --- */
+
+/* Planshetlar uchun (max-width: 1024px) */
+@media (max-width: 1024px) {
+    .charts-section {
+        grid-template-columns: 1fr; /* Grafiklar ustma-ust */
+        height: auto;
+    }
+    .chart-box {
+        height: 350px;
+        margin-bottom: 20px;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 tadan qator */
+    }
+}
+
+/* Telefonlar uchun (max-width: 768px) */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* Sidebar tepaga chiqadi */
+        overflow-y: auto;
+        height: auto;
+    }
+
+    /* Sidebar mobil holati */
+    .sidebar {
+        width: 100%;
+        height: 70px;
+        flex-direction: row;
+        padding: 0 15px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        justify-content: space-between;
+    }
+    .brand { display: none; } /* Mobil logoni yashirish */
+    .menu-item {
+        padding: 10px 5px;
+        font-size: 10px;
+    }
+    .menu-item i { font-size: 18px; margin-bottom: 2px; }
+
+    /* Asosiy qismlar */
+    .main-content {
+        flex-direction: column;
+    }
+    .months-sidebar {
+        width: 100%;
+        height: auto;
+        display: flex;
+        overflow-x: auto; /* Oylarni yon tomonga suriladigan qilish */
+        padding: 10px;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        gap: 10px;
+    }
+    .months-sidebar h4 { display: none; } /* "2026 Yil" yozuvini yashirish */
+    .month-btn {
+        white-space: nowrap;
+        width: auto;
+        margin-bottom: 0;
+    }
+
+    .dashboard {
+        padding: 15px;
+    }
+
+    /* Statistika kartochkalari 1 tadan */
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* KPI Jadvali */
+    table thead {
+        display: none; /* Mobil qurilmada sarlavhani yashirish (ixtiyoriy) */
+    }
+    table tbody td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+    /* Jadvalni mobilga moslash (label qo'shish) */
+    table tbody td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        text-align: left;
+        font-weight: bold;
+    }
+}
+
+/* Juda kichik telefonlar uchun */
+@media (max-width: 480px) {
+    .header-title h2 { font-size: 18px; }
+    .chart-box { height: 300px; }
+    .progress-container { min-width: 100px; }
+}
+</style>
+
+<div class="main-content">
+    <div class="months-sidebar">
+        <h4>2026 Yil</h4>
+        <button class="month-btn active" onclick="updateMonthUI(this, 'Yanvar')">Yanvar</button>
+        </div>
+
+    <div class="dashboard">
+        <div class="header-title">
+            <h2>O'quvchilar Statistikasi</h2>
+            <p style="color: #64748b; font-size: 13px;">Lidlar oqimi va kurslar tahlili</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="mini-card">
+                <i class="fa-solid fa-user-plus" style="background: #e0e7ff; color: #4338ca;"></i>
+                <div><h3 id="monthTotal">{{ total_month_leads }}</h3><p style="font-size: 11px; color: #64748b;">Oylik Lidlar</p></div>
+            </div>
+            <div class="mini-card">
+                <i class="fa-solid fa-bolt" style="background: #fef3c7; color: #d97706;"></i>
+                <div><h3 id="growth">+{{ weekly_growth }}</h3><p style="font-size: 11px; color: #64748b;">Haftalik O'sish</p></div>
+            </div>
+            <div class="mini-card">
+                <i class="fa-solid fa-chart-pie" style="background: #dcfce7; color: #15803d;"></i>
+                <div><h3 id="totalAll">{{ total_leads_count }}</h3><p style="font-size: 11px; color: #64748b;">Umumiy Lidlar</p></div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-box">
+                <div class="chart-header"><h3>Yillik lidlar oqimi</h3></div>
+                <div class="chart-container"><canvas id="mainChart"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-header"><h3>Kurslar kesimida</h3></div>
+                <div class="chart-container"><canvas id="doughnutChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="kpi-section">
+            <div class="chart-box">
+                <div class="chart-header" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 5px;">
+                    <h3>O'qituvchilar samaradorligi (KPI)</h3>
+                    <span style="font-size: 12px; color: #94a3b8;">Sinov darsi natijalari</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>O'qituvchi</th>
+                                <th>Jami Lid</th>
+                                <th>Keldi</th>
+                                <th>Kelmadi</th>
+                                <th>Muvaffaqiyat ko'rsatkichi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in teachers_data %}
+                            <tr>
+                                <td style="font-weight: 600; color: var(--text-dark);">{{ stat.name }}</td>
+                                <td><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px;">{{ stat.total }}</span></td>
+                                <td style="color: #10b981; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> {{ stat.attended }}</td>
+                                <td style="color: #ef4444;"><i class="fa-solid fa-circle-xmark"></i> {{ stat.missed }}</td>
+                                <td>
+                                    <div class="progress-container">
+                                        <div class="progress-bar-bg">
+                                            <div class="progress-fill" style="width: {{ stat.percentage }}%; 
+                                                background: {% if stat.percentage > 70 %}#10b981{% elif stat.percentage > 40 %}#f59e0b{% else %}#ef4444{% endif %};">
+                                            </div>
+                                        </div>
+                                        <span style="font-weight: bold; font-size: 12px; min-width: 35px;">{{ stat.percentage }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> </div>
+    <script>
+        // Django dan kelayotgan real ma'lumotlar
+        const monthlyData = JSON.parse('{{ monthly_data|safe }}');
+        const courseLabels = JSON.parse('{{ course_labels|safe }}');
+        const courseCounts = JSON.parse('{{ course_counts|safe }}');
+
+        let mainChart, doughnutChart;
+
+        function initCharts() {
+            const ctxLine = document.getElementById('mainChart').getContext('2d');
+            const ctxPie = document.getElementById('doughnutChart').getContext('2d');
+
+            // Line Chart
+            mainChart = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'Iyun', 'Iyul', 'Avg', 'Sen', 'Okt', 'Noy', 'Dek'],
+                    datasets: [{
+                        label: 'Yangi Lidlar',
+                        data: monthlyData,
+                        borderColor: '#a91b2e',
+                        backgroundColor: 'rgba(169, 27, 46, 0.05)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Doughnut Chart
+            doughnutChart = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: courseLabels,
+                    datasets: [{
+                        data: courseCounts,
+                        backgroundColor: ['#a91b2e', '#1e293b', '#4f46e5', '#10b981', '#f59e0b', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        function updateMonthUI(btn, monthName) {
+            document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('chartTitle').innerText = monthName + " oyi statistikasi";
+            // Bu yerda kelajakda API orqali kunlik ma'lumotlarni yuklash mumkin
+        }
+
+        window.onload = initCharts;
+    </script>
+</body>
+</html>

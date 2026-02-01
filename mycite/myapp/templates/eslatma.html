@@ -1,0 +1,488 @@
+    {% load static %}
+    <!DOCTYPE html>
+        <html lang="uz">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Eslatmalar - BRIGHT FUTURE ASAKA</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                /* --- 1. UMUMIY STYLES --- */
+                :root {
+                    --primary-red: #a91b2e;
+                    --bg-light: #f4f6f9;
+                    --text-dark: #333;
+                    --sidebar-width: 90px;
+                }
+
+                * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+                body { display: flex; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
+
+                /* SIDEBAR (index.html bilan bir xil) */
+                .sidebar {
+                    width: var(--sidebar-width); background: white; border-right: 1px solid #ddd;
+                    display: flex; flex-direction: column; align-items: center; padding-top: 20px; height: 100%;
+                }
+                .brand { margin-bottom: 25px; text-align: center; font-size: 12px; font-weight: bold; color: #1a3c8a; }
+                .brand span { color: var(--primary-red); }
+                .logo-img { width: 40px; margin-bottom: 5px; }
+
+                .menu-item {
+                    width: 100%; display: flex; flex-direction: column; align-items: center; padding: 15px 0;
+                    color: #777; text-decoration: none; font-size: 11px; transition: 0.3s;
+                    border-left: 3px solid transparent;
+                }
+                .menu-item i { font-size: 20px; margin-bottom: 5px; }
+                .menu-item:hover, .menu-item.active {
+                    color: var(--primary-red); background-color: #fff5f5; border-left-color: var(--primary-red);
+                }
+
+                /* MAIN CONTENT */
+                .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; }
+
+                header {
+                    height: 60px; background: white; display: flex; align-items: center;
+                    justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #eee;
+                }
+                .header-title h3 { font-size: 20px; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+                
+                .btn-add {
+                    background-color: var(--primary-red); color: white; padding: 8px 20px; border-radius: 20px;
+                    text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+                    display: flex; align-items: center; gap: 8px; transition: 0.3s;
+                    box-shadow: 0 4px 6px rgba(169, 27, 46, 0.2);
+                }
+                .btn-add:hover { background-color: #8a1625; }
+
+                /* --- ESLATMA PAGEDA MAXSUS DIZAYN --- */
+                .reminder-container {
+                    display: flex; flex: 1; overflow: hidden;
+                }
+
+                /* Chap tomon: OYLAR */
+                .months-sidebar {
+                    width: 220px; background: white; border-right: 1px solid #eee;
+                    overflow-y: auto; padding: 10px 0;
+                }
+                .month-card {
+                    padding: 15px 25px; cursor: pointer; color: #555; font-weight: 500; font-size: 14px;
+                    display: flex; justify-content: space-between; align-items: center;
+                    border-bottom: 1px solid #f9f9f9; transition: 0.2s;
+                }
+                .month-card:hover { background-color: #f8f8f8; color: var(--primary-red); }
+                .month-card.active {
+                    background-color: #fff0f0; color: var(--primary-red); font-weight: bold; border-left: 4px solid var(--primary-red);
+                }
+                .badge { background: #eee; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #777; }
+
+                /* O'rta tomon: KALENDAR */
+                .calendar-area {
+                    flex: 1; padding: 20px 30px; overflow-y: auto; background-color: #fcfcfc;
+                }
+                .calendar-header { margin-bottom: 20px; font-size: 24px; color: #333; font-weight: 600; }
+                
+                .days-grid {
+                    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;
+                }
+
+                .day-card {
+                    background: white; border-radius: 12px; padding: 15px;
+                    border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+                    transition: transform 0.2s, box-shadow 0.2s; position: relative;
+                    min-height: 120px; display: flex; flex-direction: column;
+                }
+                .day-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); border-color: #e0e0e0; }
+                
+                .date-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+                .date-num { font-size: 18px; font-weight: bold; color: var(--primary-red); }
+                .date-week { font-size: 12px; color: #888; text-transform: uppercase; font-weight: 600; }
+
+                /* Eslatma itemi (sticker) */
+                .note-item {
+                    background: #eafbf2; color: #1e5c3f; padding: 6px 10px; border-radius: 6px;
+                    font-size: 12px; margin-top: 5px; border: 1px solid #cbf5df; line-height: 1.4;
+                }
+                .note-item strong { display: block; color: #0f4028; margin-bottom: 2px; }
+
+                /* --- MODAL (POPUP) --- */
+                .modal-overlay {
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+                    justify-content: center; align-items: center; backdrop-filter: blur(3px);
+                }
+                .modal-box {
+                    background: white; width: 420px; padding: 25px; border-radius: 15px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideIn 0.3s ease;
+                }
+                @keyframes slideIn { from {transform: translateY(20px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
+
+                .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+                .modal-header h3 { font-size: 18px; }
+                .close-btn { font-size: 24px; cursor: pointer; color: #999; }
+                
+                .input-group { margin-bottom: 15px; }
+                .input-group label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; font-weight: 500; }
+                .input-group input, .input-group select, .input-group textarea {
+                    width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px;
+                }
+                .input-group textarea { height: 80px; resize: none; }
+                .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary-red); }
+
+                .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+                .btn-cancel { background: #f1f1f1; color: #333; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; }
+                .btn-save { background: var(--primary-red); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; }
+
+                /* --- ESLATMALAR UCHUN RESPONSIVE DIZAYN --- */
+
+    /* 1. Planshetlar uchun (max-width: 1024px) */
+    @media (max-width: 1024px) {
+        :root {
+            --sidebar-width: 70px;
+        }
+        .months-sidebar {
+            width: 180px; /* Oylar ro'yxatini biroz qisqartiramiz */
+        }
+        .days-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+    }
+
+    /* 2. Kichik planshet va katta telefonlar (max-width: 768px) */
+    @media (max-width: 768px) {
+        .reminder-container {
+            flex-direction: column; /* Oylar tepaga, kalendar pastga tushadi */
+        }
+        .months-sidebar {
+            width: 100%;
+            height: auto;
+            display: flex;
+            overflow-x: auto; /* Oylarni yon tomonga skroll qilish */
+            border-right: none;
+            border-bottom: 1px solid #eee;
+            padding: 5px;
+            white-space: nowrap;
+        }
+        .month-card {
+            padding: 10px 20px;
+            border-bottom: none;
+            border-radius: 8px;
+            margin-right: 10px;
+            display: inline-flex;
+        }
+        .month-card.active {
+            border-left: none;
+            border-bottom: 3px solid var(--primary-red);
+        }
+        .calendar-area {
+            padding: 15px;
+        }
+    }
+
+    /* 3. Telefonlar uchun (max-width: 480px) */
+    @media (max-width: 480px) {
+        header {
+            padding: 0 15px;
+            height: auto;
+            padding-top: 10px;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+        .header-title h3 {
+            font-size: 16px;
+        }
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+            font-size: 13px;
+        }
+        .calendar-header {
+            font-size: 18px;
+            text-align: center;
+        }
+        .days-grid {
+            grid-template-columns: 1fr; /* Kunlar bitta ustun bo'lib qoladi */
+        }
+        .day-card {
+            min-height: auto;
+        }
+        .modal-box {
+            width: 95%;
+            padding: 15px;
+        }
+
+        /* Sidebarni (navigatsiya) telefonning pastiga tushirish */
+        body {
+            flex-direction: column;
+        }
+        .sidebar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            flex-direction: row;
+            padding: 0;
+            z-index: 1001;
+            border-right: none;
+            border-top: 1px solid #ddd;
+        }
+        .sidebar .brand {
+            display: none;
+        }
+        .menu-item {
+            padding: 5px 0;
+            font-size: 10px;
+            flex: 1;
+            border-left: none;
+            border-top: 3px solid transparent;
+        }
+        .menu-item.active {
+            border-left: none;
+            border-top-color: var(--primary-red);
+        }
+        .main-content {
+            padding-bottom: 65px; /* Pastki menyu uchun bo'shliq */
+        }
+    }
+            </style>
+        </head>
+        <body>
+
+       <div class="sidebar">
+    <div class="brand">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" width="30px">
+    </div>
+    
+    <a href="{% url 'lids' %}" class="menu-item {% if request.resolver_match.url_name == 'lids' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i> <span>Lidlar</span>
+    </a>
+    
+    <a href="{% url 'home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-user-tie"></i> <span>Ustozlar</span>
+    </a>
+    
+    <a href="{% url 'notes' %}" class="menu-item {% if request.resolver_match.url_name == 'notes' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i> <span>Eslatmalar</span>
+    </a>
+
+    <a href="{% url 'statistics' %}" class="menu-item {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line"></i> <span>Statistika</span>
+    </a>
+
+    {% if user.is_superuser %}
+    <a href="/admin/" target="_blank" class="menu-item" style="color: #1e293b;">
+        <i class="fa-solid fa-user-shield"></i> <span>Admin</span>
+    </a>
+    {% endif %}
+
+    <a href="{% url 'logout' %}" class="menu-item" style="margin-top: auto;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>Chiqish</span>
+    </a>
+</div>
+
+            <div class="main-content">
+                <header>
+                    <div class="header-title">
+                        <h3><i class="fa-regular fa-calendar-check" style="color: #a91b2e;"></i> Eslatmalar Taqvimi</h3>
+                    </div>
+                    <button class="btn-add" onclick="openModal()">
+                        <i class="fa-solid fa-plus"></i> Eslatma qo'shish
+                    </button>
+                </header>
+
+                <div class="reminder-container">
+                    <div class="months-sidebar" id="monthList">
+                        </div>
+
+                    <div class="calendar-area">
+                        <div class="calendar-header" id="currentMonthTitle">Yanvar 2026</div>
+                        <div class="days-grid" id="daysGrid">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="addModal">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <h3>Yangi eslatma</h3>
+                        <span class="close-btn" onclick="closeModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group">
+                            <label>Kimga (O'qituvchi)</label>
+                            <select id="teacherSelect">
+                                <option value="">Tanlang...</option>
+                                </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Sana</label>
+                            <input type="date" id="noteDate">
+                        </div>
+                        <div class="input-group">
+                            <label>Izoh</label>
+                            <textarea id="noteText" placeholder="Eslatma matnini kiriting..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-cancel" onclick="closeModal()">Bekor qilish</button>
+                        <button class="btn-save" onclick="saveNote()">Saqlash</button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                async function saveNote() {
+        const noteData = {
+            teacher_id: document.getElementById('nTeacher').value, // Select-dan ID oladi
+            text: document.getElementById('nText').value
+        };
+
+        const response = await fetch('/api/add-note/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(noteData)
+        });
+
+        if (response.ok) {
+            alert("Eslatma bazaga saqlandi!");
+            location.reload();
+        }
+    }
+                // --- MA'LUMOTLAR ---
+                const teachers = ["Dilshodbek", "Dilafruz", "Muharramoy IELTS", "Saidova Fotima", "Temur", "Nozimjon", "Habibullo IT"];
+                const months = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
+                const YEAR = 2026;
+
+                // --- SELECTORLAR ---
+                const monthListEl = document.getElementById('monthList');
+                const daysGridEl = document.getElementById('daysGrid');
+                const titleEl = document.getElementById('currentMonthTitle');
+                const modal = document.getElementById('addModal');
+                const teacherSelect = document.getElementById('teacherSelect');
+
+                let activeMonth = 0; // Hozirgi oy (0 = Yanvar)
+                
+                // LocalStorage dan ma'lumotni o'qish
+                let savedNotes = JSON.parse(localStorage.getItem('crm_notes')) || {};
+
+                // --- INIT ---
+                function init() {
+                    renderMonths();
+                    renderDays(activeMonth);
+                    
+                    // Selectga o'qituvchilarni joylash
+                    teachers.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t; opt.innerText = t;
+                        teacherSelect.appendChild(opt);
+                    });
+                }
+
+                // --- 1. OYLARNI CHIZISH ---
+                function renderMonths() {
+                    monthListEl.innerHTML = '';
+                    months.forEach((m, idx) => {
+                        const div = document.createElement('div');
+                        div.className = `month-card ${idx === activeMonth ? 'active' : ''}`;
+                        div.innerHTML = `${m} <span class="badge">2026</span>`;
+                        div.onclick = () => {
+                            activeMonth = idx;
+                            renderMonths();
+                            renderDays(idx);
+                        };
+                        monthListEl.appendChild(div);
+                    });
+                }
+
+                // --- 2. KUNLARNI CHIZISH (YAKSHANBASIZ) ---
+                function renderDays(monthIndex) {
+                    daysGridEl.innerHTML = '';
+                    titleEl.innerText = `${months[monthIndex]} ${YEAR}`;
+
+                    const daysInMonth = new Date(YEAR, monthIndex + 1, 0).getDate();
+                    const weekDays = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateObj = new Date(YEAR, monthIndex, day);
+                        const dayWeek = dateObj.getDay();
+
+                        if (dayWeek === 0) continue; // Yakshanba (0) tashlab ketiladi
+
+                        // ID yaratish: "2026-00-00" formati (oy 0 dan boshlangani uchun +1)
+                        const dateKey = `${YEAR}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        
+                        // Card yaratish
+                        const card = document.createElement('div');
+                        card.className = 'day-card';
+                        
+                        let notesHtml = '';
+                        if (savedNotes[dateKey]) {
+                            savedNotes[dateKey].forEach(note => {
+                                notesHtml += `
+                                    <div class="note-item">
+                                        <strong>${note.teacher}</strong>
+                                        ${note.text}
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        card.innerHTML = `
+                            <div class="date-top">
+                                <span class="date-num">${String(day).padStart(2,'0')}.${String(monthIndex + 1).padStart(2,'0')}</span>
+                                <span class="date-week">${weekDays[dayWeek]}</span>
+                            </div>
+                            <div class="notes-wrapper">
+                                ${notesHtml}
+                            </div>
+                        `;
+                        daysGridEl.appendChild(card);
+                    }
+                }
+
+                // --- 3. MODAL & SAVE ---
+                function openModal() { modal.style.display = 'flex'; }
+                function closeModal() { modal.style.display = 'none'; }
+                
+                window.onclick = (e) => { if(e.target == modal) closeModal(); }
+
+                function saveNote() {
+                    const teacher = teacherSelect.value;
+                    const dateVal = document.getElementById('noteDate').value; // YYYY-MM-DD
+                    const text = document.getElementById('noteText').value;
+
+                    if(!teacher || !dateVal || !text) {
+                        alert("Barcha maydonlarni to'ldiring!");
+                        return;
+                    }
+
+                    // Xotiraga yozish
+                    if (!savedNotes[dateVal]) {
+                        savedNotes[dateVal] = [];
+                    }
+                    savedNotes[dateVal].push({ teacher, text });
+                    
+                    // LocalStorage yangilash
+                    localStorage.setItem('crm_notes', JSON.stringify(savedNotes));
+
+                    // Ekranni yangilash (agar o'sha oy ochiq bo'lsa)
+                    const noteMonth = parseInt(dateVal.split('-')[1]) - 1;
+                    if (noteMonth === activeMonth) {
+                        renderDays(activeMonth);
+                    } else {
+                        alert("Eslatma saqlandi! (Boshqa oyga tushdi)");
+                    }
+
+                    closeModal();
+                    document.getElementById('noteText').value = '';
+                }
+
+                init();
+            </script>
+        </body>
+        </html>

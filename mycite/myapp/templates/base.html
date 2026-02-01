@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRM Tizimi{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    {% include 'navbar.html' %}
+
+    <div class="main-content">
+        <header>
+            <div class="header-left">
+                <h3>{% block header_title %}{% endblock %}</h3>
+                </div>
+            <div class="header-right">
+                <span>{{ request.user.username }}</span>
+                <div class="profile-img"><i class="fa-solid fa-user"></i></div>
+            </div>
+        </header>
+
+        <div class="content-body">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

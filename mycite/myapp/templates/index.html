@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirish - BRIGHT FUTURE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #a91b2e, #1a3c8a);
+            overflow: hidden;
+        }
+
+        /* Orqa fondagi harakatlanuvchi doiralar */
+        .circle {
+            position: absolute; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: move 20s infinite linear;
+        }
+        @keyframes move {
+            from { transform: translateY(0) rotate(0deg); }
+            to { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        .login-card {
+            width: 380px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .login-card img { width: 70px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); }
+
+        .login-card h2 { color: white; margin-bottom: 30px; font-weight: 500; letter-spacing: 1px; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: white; opacity: 0.8; }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            outline: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        .input-group input::placeholder { color: rgba(255, 255, 255, 0.7); }
+        .input-group input:focus { background: rgba(255, 255, 255, 0.3); box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 30px;
+            background: white;
+            color: #a91b2e;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #f8f8f8; }
+
+        .error-msg { color: #ffeb3b; font-size: 13px; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="circle" style="width: 80px; height: 80px; left: 10%; bottom: 10%;"></div>
+    <div class="circle" style="width: 120px; height: 120px; right: 15%; top: 15%;"></div>
+
+    <div class="login-card">
+        <img src="./logo.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/5766/5766548.png'">
+        <h2>BRIGHT FUTURE</h2>
+        
+        <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %} <div class="input-group">
+        <label>Login</label>
+        <input type="text" name="username" required>
+    </div>
+    
+        <div class="input-group">
+            <label>Parol</label>
+            <input type="password" name="password" required>
+        </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p style="color: red; font-size: 12px;">{{ message }}</p>
+                {% endfor %}
+            {% endif %} 
+
+    <button type="submit" class="btn-save" style="width: 100%;">Kirish</button>
+</form>
+        
+        <p class="error-msg" id="error">Login yoki parol noto'g'ri!</p>
+    </div>
+
+    <script>
+        function checkLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const error = document.getElementById('error');
+
+            if(user === "bright" && pass === "1234") {
+                // Tizimga kirganlik haqida belgi saqlash
+                sessionStorage.setItem('isLoggedIn', 'true');
+                window.location.href = "home.html";
+            } else {
+                error.style.display = 'block';
+                // Animatsiya xatolik uchun
+                document.querySelector('.login-card').style.animation = 'shake 0.3s';
+                setTimeout(() => { document.querySelector('.login-card').style.animation = ''; }, 300);
+            }
+        }
+
+        // Enter tugmasini bosganda kirish
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+    </script>
+
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</body>
+</html>

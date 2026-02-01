@@ -1,0 +1,31 @@
+<div class="sidebar">
+    <div class="brand">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" width="30px">
+    </div>
+    
+    <a href="{% url 'lids' %}" class="menu-item {% if request.resolver_match.url_name == 'lids' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i> <span>Lidlar</span>
+    </a>
+    
+    <a href="{% url 'home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-user-tie"></i> <span>Ustozlar</span>
+    </a>
+    
+    <a href="{% url 'notes' %}" class="menu-item {% if request.resolver_match.url_name == 'notes' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i> <span>Eslatmalar</span>
+    </a>
+
+    <a href="{% url 'statistics' %}" class="menu-item {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line"></i> <span>Statistika</span>
+    </a>
+
+    {% if user.is_superuser %}
+    <a href="/admin/" target="_blank" class="menu-item" style="color: #1e293b;">
+        <i class="fa-solid fa-user-shield"></i> <span>Admin</span>
+    </a>
+    {% endif %}
+
+    <a href="{% url 'logout' %}" class="menu-item" style="margin-top: auto;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>Chiqish</span>
+    </a>
+</div>

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lidlar - BRIGHT FUTURE ASAKA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- UMUMIY STYLES --- */
+        :root {
+            --primary-red: #a91b2e;
+            --bg-light: #f4f6f9;
+            --text-dark: #333;
+            --text-gray: #666;
+            --sidebar-width: 90px;
+            --green: #10b981;
+            --yellow: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; background-color: var(--bg-light); height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--sidebar-width); background: white; border-right: 1px solid #ddd;
+            display: flex; flex-direction: column; align-items: center; padding-top: 20px; height: 100%;
+        }
+        .brand { margin-bottom: 25px; text-align: center; font-size: 12px; font-weight: bold; color: #1a3c8a; }
+        .brand span { color: var(--primary-red); }
+        .logo-img { width: 40px; margin-bottom: 5px; }
+
+        .menu-item {
+            width: 100%; display: flex; flex-direction: column; align-items: center; padding: 15px 0;
+            color: #777; text-decoration: none; font-size: 11px; transition: 0.3s;
+            border-left: 3px solid transparent;
+        }
+        .menu-item i { font-size: 20px; margin-bottom: 5px; }
+        .menu-item:hover, .menu-item.active {
+            color: var(--primary-red); background-color: #fff5f5; border-left-color: var(--primary-red);
+        }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; }
+
+        header {
+            height: 60px; background: white; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #eee;
+        }
+        .header-title h3 { font-size: 20px; color: var(--text-dark); display: flex; align-items: center; gap: 10px; }
+        
+        .btn-add {
+            background-color: var(--primary-red); color: white; padding: 8px 20px; border-radius: 20px;
+            text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(169, 27, 46, 0.2);
+        }
+        .btn-add:hover { background-color: #8a1625; }
+
+        /* --- LIDLAR GRID --- */
+        .content-area {
+            flex: 1; padding: 25px; overflow-y: auto;
+        }
+
+        .stats-bar {
+            margin-bottom: 20px; display: flex; gap: 20px;
+        }
+        .stat-card {
+            background: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 15px;
+        }
+        .stat-icon {
+            width: 40px; height: 40px; border-radius: 50%; background: #fee2e2; color: var(--primary-red);
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .stat-info h4 { font-size: 24px; color: #333; }
+        .stat-info p { font-size: 12px; color: #777; }
+
+        .leads-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+        }
+
+        .lead-card {
+            background: white; border-radius: 12px; padding: 20px; border: 1px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: 0.2s; position: relative;
+        }
+        .lead-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.05); }
+
+        .lead-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .lead-name { font-size: 16px; font-weight: bold; color: #333; }
+        .lead-sub { font-size: 12px; color: #888; }
+        
+        .lead-source { 
+            font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #eef2ff; color: #4f46e5; font-weight: 600;
+        }
+
+        .lead-details { margin-bottom: 15px; }
+        .detail-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; margin-bottom: 6px; }
+        .detail-row i { width: 16px; color: #999; }
+
+        .lead-footer { 
+            border-top: 1px solid #f0f0f0; padding-top: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        .status-badge {
+            font-size: 11px; padding: 4px 10px; border-radius: 15px; font-weight: 600; display: flex; align-items: center; gap: 5px;
+        }
+        .status-yes { background: #d1fae5; color: #065f46; }
+        .status-no { background: #fef3c7; color: #92400e; }
+
+        .btn-delete { color: #ef4444; cursor: pointer; font-size: 14px; opacity: 0.6; transition: 0.2s; }
+        .btn-delete:hover { opacity: 1; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(3px);
+        }
+        .modal-box {
+            background: white; width: 500px; padding: 30px; border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group.full { grid-column: span 2; }
+        
+        .input-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 14px;
+        }
+        
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-cancel { background: #f1f1f1; color: #333; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-save { background: var(--primary-red); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; }
+/* --- LIDLAR RESPONSIVE DIZAYN --- */
+
+/* 1. Planshetlar uchun (max-width: 1024px) */
+@media (max-width: 1024px) {
+    :root {
+        --sidebar-width: 70px;
+    }
+    .sidebar .menu-item span {
+        display: none; /* Matnlarni yashirib faqat ikonkalarni qoldirish mumkin */
+    }
+    .leads-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* 2. Kichik planshet va telefonlar (max-width: 768px) */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* Sidebarni pastga tushirish uchun */
+    }
+
+    .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        padding-top: 0;
+        z-index: 1000;
+        border-right: none;
+        border-top: 1px solid #ddd;
+    }
+
+    .sidebar .brand {
+        display: none; /* Logotipni mobil menyuda yashirish */
+    }
+
+    .sidebar .menu-item {
+        flex: 1;
+        padding: 10px 0;
+        border-left: none;
+        border-top: 3px solid transparent;
+        font-size: 10px;
+    }
+
+    .sidebar .menu-item i {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .sidebar .menu-item.active {
+        border-left-color: transparent;
+        border-top-color: var(--primary-red);
+    }
+
+    .main-content {
+        padding-bottom: 60px; /* Menyu uchun joy */
+    }
+
+    header {
+        padding: 0 15px;
+    }
+
+    .stats-bar {
+        flex-wrap: wrap; /* Stat kartochkalari sig'masa pastga tushadi */
+        gap: 10px;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 140px;
+        padding: 10px;
+    }
+}
+
+/* 3. Smartfonlar uchun (max-width: 480px) */
+@media (max-width: 480px) {
+    header {
+        height: auto;
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .header-title h3 {
+        font-size: 18px;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .content-area {
+        padding: 15px;
+    }
+
+    .leads-grid {
+        grid-template-columns: 1fr; /* Kartochkalar bittadan to'liq chiqadi */
+    }
+
+    .modal-box {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr; /* Modal ichidagi inputlar bittadan chiqadi */
+    }
+
+    .input-group.full {
+        grid-column: span 1;
+    }
+}
+    </style>
+</head>
+<body>
+
+{% load static %}
+<!-- Navbar habibullo  -->
+   <div class="sidebar">
+    <div class="brand">
+        <img src="{% static 'img/logo.png' %}" alt="Logo" width="30px">
+    </div>
+    
+    <a href="{% url 'lids' %}" class="menu-item {% if request.resolver_match.url_name == 'lids' %}active{% endif %}">
+        <i class="fa-solid fa-users"></i> <span>Lidlar</span>
+    </a>
+    
+    <a href="{% url 'home' %}" class="menu-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="fa-solid fa-user-tie"></i> <span>Ustozlar</span>
+    </a>
+    
+    <a href="{% url 'notes' %}" class="menu-item {% if request.resolver_match.url_name == 'notes' %}active{% endif %}">
+        <i class="fa-solid fa-bell"></i> <span>Eslatmalar</span>
+    </a>
+
+    <a href="{% url 'statistics' %}" class="menu-item {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line"></i> <span>Statistika</span>
+    </a>
+
+    {% if user.is_superuser %}
+    <a href="/admin/" target="_blank" class="menu-item" style="color: #1e293b;">
+        <i class="fa-solid fa-user-shield"></i> <span>Admin</span>
+    </a>
+    {% endif %}
+
+    <a href="{% url 'logout' %}" class="menu-item" style="margin-top: auto;">
+        <i class="fa-solid fa-right-from-bracket"></i> <span>Chiqish</span>
+    </a>
+</div>
+<!--  -->
+<div class="main-content">
+    <header>
+        <div class="header-title">
+            <h3><i class="fa-solid fa-users-viewfinder"></i> Lidlar bo'limi</h3>
+        </div>
+        <button class="btn-add" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i> Yangi o'quvchi qo'shish
+        </button>
+    </header>
+
+    <div class="content-area">
+        <div class="filters-bar" style="display: flex; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <div class="search-box" style="flex: 2; position: relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                <input type="text" id="phoneSearch" placeholder="Telefon oxirgi raqamlari orqali (masalan: 0119)..." 
+                       style="width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ddd; border-radius: 8px; outline: none;">
+            </div>
+            
+            <div class="filter-box" style="flex: 1;">
+                <select id="teacherFilter" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; cursor: pointer;">
+                    <option value="all">Barcha o'qituvchilar</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.name }}">{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <div class="stat-info">
+                    <h4 id="totalLeads">0</h4>
+                    <p>Jami Lidlar</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-check-double"></i></div>
+                <div class="stat-info">
+                    <h4 id="trialLeads">0</h4>
+                    <p>Sinovdan o'tganlar</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="leads-grid" id="leadsContainer">
+            </div>
+    </div>
+</div>
+
+    <!-- Modal qism -->
+<div class="modal-overlay" id="leadModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Yangi Lid qo'shish</h3>
+            <span style="cursor:pointer;" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Ism Familiya</label>
+                    <input type="text" id="lName" placeholder="Tolibov Tolib">
+                </div>
+                <div class="input-group">
+                    <label>Yoshi</label>
+                    <input type="number" id="lAge" placeholder="16">
+                </div>
+                
+                <div class="input-group full">
+                    <label>Telefon raqam</label>
+                    <input type="text" id="lPhone" placeholder="+998 90 123 45 67">
+                </div>
+
+                <div class="input-group">
+                    <label>Qayerdan keldi?</label>
+                    <select id="lSource">
+                        <option value="Instagram">Instagram</option>
+                        <option value="Tanish orqali">Tanish orqali</option>
+                        <option value="Banner">Banner / Ko'cha</option>
+                        <option value="Telegram">Telegram</option>
+                        <option value="Maktab targ'iboti">Maktab targ'iboti</option>
+                    </select>     
+                </div>
+
+                <div class="input-group">
+                    <label>O'qituvchi</label>
+                    <select id="lTeacher" onchange="updateGroupsByTeacher()">
+                        </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Guruhni tanlang</label>
+                    <select id="lGroup">
+                        <option value="">Avval o'qituvchini tanlang...</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Sinov darsi</label>
+                    <select id="lTrial">
+                        <option value="yoq">Hali kirmadi</option>
+                        <option value="ha">Qatnashdi (O'tdi)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Bekor qilish</button>
+            <button class="btn-save" onclick="saveLead()">Saqlash</button>
+        </div>
+    </div>
+</div>
+
+<!-- modal yopildi -->
+<script>
+    // 1. Ma'lumotlarni Django bazasidan olish
+    // 1. Django'dan barcha ma'lumotlarni JS ga yuklab olamiz
+    let currentEditId = null;
+
+    // Guruhlar ro'yxati (Filtrlash uchun kerak)
+    const allGroups = [
+        {% for g in groups %}
+        {
+            id: {{ g.id }},
+            name: "{{ g.name }}",
+            teacher_name: "{{ g.teacher.name }}", // Filtrlash uchun kalit
+            time: "{{ g.time|default:'' }}"
+        },
+        {% endfor %}
+    ];
+
+    // Lidlar ro'yxati
+    let leads = [
+        {% for lead in leads %}
+        {
+            id: {{ lead.id }},
+            name: "{{ lead.name }}",
+            age: {{ lead.age }},
+            phone: "{{ lead.phone }}",  // School -> Phone
+            
+            // Agar guruh bo'lsa nomini, bo'lmasa bo'sh
+            group_id: {% if lead.group %} {{ lead.group.id }} {% else %} null {% endif %},
+            group_name: "{% if lead.group %}{{ lead.group.name }}{% else %}Tanlanmagan{% endif %}",
+            
+            source: "{{ lead.source }}",
+            teacher_name: "{{ lead.teacher.name|default:'Belgilanmagan' }}",
+            has_trial: {% if lead.has_trial %} true {% else %} false {% endif %}
+        },
+        {% endfor %}
+    ];
+
+    // Elementlar
+    const modal = document.getElementById('leadModal');
+    const container = document.getElementById('leadsContainer');
+    const totalCountEl = document.getElementById('totalLeads');
+    const trialCountEl = document.getElementById('trialLeads');
+    const teacherSelect = document.getElementById('lTeacher');
+    const groupSelect = document.getElementById('lGroup'); // Yangi select
+
+    // --- FUNKSIYALAR ---
+
+    // 1. O'qituvchilarni yuklash
+    function loadTeachers() {
+        teacherSelect.innerHTML = '<option value="">Tanlang...</option>';
+        {% for t in teachers %}
+            var opt = document.createElement('option');
+            opt.value = "{{ t.name }}";
+            opt.innerText = "{{ t.name }}";
+            teacherSelect.appendChild(opt);
+        {% endfor %}
+    }
+
+    // 2. O'qituvchi o'zgarganda Guruhlarni yangilash (Eng muhim joyi)
+    function updateGroupsByTeacher() {
+        const selectedTeacher = teacherSelect.value;
+        
+        // Selectni tozalaymiz
+        groupSelect.innerHTML = '<option value="">Guruhni tanlang...</option>';
+
+        if (selectedTeacher) {
+            // Tanlangan o'qituvchiga tegishli guruhlarni filter qilamiz
+            const filteredGroups = allGroups.filter(g => g.teacher_name === selectedTeacher);
+            
+            filteredGroups.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id; // Value sifatida ID ketadi
+                opt.innerText = `${g.name} (${g.time})`;
+                groupSelect.appendChild(opt);
+            });
+        }
+    }
+
+    // 3. Ekranga chizish
+   // 1. renderLeads funksiyasini yangilaymiz (Atributlar qo'shildi)
+function renderLeads() {
+    container.innerHTML = '';
+    let trialCount = 0;
+
+    leads.forEach((lead) => {
+        if(lead.has_trial) trialCount++;
+
+        const card = document.createElement('div');
+        card.className = 'lead-card';
+        
+        // MANA SHU QATORLAR QIDIRUV UCHUN HAYOTIY MUHIM:
+        card.setAttribute('data-phone', String(lead.phone || ""));
+        card.setAttribute('data-teacher', String(lead.teacher_name || ""));
+
+        let statusHtml = lead.has_trial 
+            ? `<span class="status-badge status-yes"><i class="fa-solid fa-check"></i> Sinovdan o'tdi</span>`
+            : `<span class="status-badge status-no"><i class="fa-regular fa-clock"></i> Kutyapti</span>`;
+
+        card.innerHTML = `
+            <div class="lead-header">
+                <div>
+                    <div class="lead-name">${lead.name}</div>
+                    <div class="lead-sub">${lead.age} yosh | <i class="fa-solid fa-phone"></i> ${lead.phone}</div>
+                </div>
+                <span class="lead-source">${lead.source}</span>
+            </div>
+            <div class="lead-details">
+                <div class="detail-row"><i class="fa-solid fa-layer-group"></i> <b>Guruh:</b> ${lead.group_name}</div>
+                <div class="detail-row"><i class="fa-solid fa-chalkboard-user"></i> <b>Ustoz:</b> ${lead.teacher_name}</div>
+            </div>
+            <div class="lead-footer">
+                ${statusHtml}
+                <div class="actions">
+                    <i class="fa-solid fa-pen-to-square" onclick="openEditModal(${lead.id})" style="margin-right: 12px; color: #4f46e5; cursor:pointer;"></i>
+                    <i class="fa-solid fa-trash btn-delete" onclick="deleteLead(${lead.id})"></i>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    // Renderdan keyin statistika va filtrni yangilab qo'yamiz
+    applyFilters(); 
+}
+
+// 2. applyFilters funksiyasini biroz soddalashtiramiz
+function applyFilters() {
+    const phoneInput = document.getElementById('phoneSearch');
+    const teacherSelect = document.getElementById('teacherFilter');
+    
+    // Agar elementlar topilmasa funksiyani to'xtatamiz
+    if (!phoneInput || !teacherSelect) return;
+
+    const phoneValue = phoneInput.value.trim().replace(/\s/g, '');
+    const teacherValue = teacherSelect.value;
+    const cards = document.querySelectorAll('.lead-card');
+    
+    let visibleCount = 0;
+    let visibleTrialCount = 0;
+
+    cards.forEach(card => {
+        const cardPhone = (card.getAttribute('data-phone') || "").replace(/\s/g, '');
+        const cardTeacher = card.getAttribute('data-teacher') || "";
+        const isTrial = card.querySelector('.status-yes') !== null;
+
+        // Qidiruv mantiqi: Telefon oxiridan va Ustoz nomi bo'yicha
+        const matchesPhone = phoneValue === "" || cardPhone.endsWith(phoneValue);
+        const matchesTeacher = teacherValue === "all" || teacherValue === "" || cardTeacher === teacherValue;
+
+        if (matchesPhone && matchesTeacher) {
+            card.style.display = 'block';
+            visibleCount++;
+            if(isTrial) visibleTrialCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    // Statistika raqamlarini yangilash
+    if(totalCountEl) totalCountEl.innerText = visibleCount;
+    if(trialCountEl) trialCountEl.innerText = visibleTrialCount;
+}
+
+// 3. Eventlarni to'g'ri bog'lash
+document.addEventListener('input', (e) => {
+    if (e.target.id === 'phoneSearch') applyFilters();
+});
+
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'teacherFilter') applyFilters();
+});
+
+    // 4. Modal ochish
+    function openModal() {
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        currentEditId = null;
+        document.querySelector('.modal-box h3').innerText = "Yangi Lid qo'shish";
+        // Formani tozalash
+        document.getElementById('lName').value = '';
+        document.getElementById('lAge').value = '';
+        document.getElementById('lPhone').value = '';
+        document.getElementById('lTeacher').value = '';
+        groupSelect.innerHTML = '<option value="">Avval o\'qituvchini tanlang...</option>'; // Guruhni reset qilish
+        document.getElementById('lTrial').value = 'yoq';
+    }
+
+    window.onclick = (e) => { if(e.target == modal) closeModal(); }
+
+    // 5. Tahrirlash (Edit)
+    function openEditModal(id) {
+        const lead = leads.find(l => l.id === id);
+        if(!lead) return;
+
+        currentEditId = lead.id;
+        document.getElementById('lName').value = lead.name;
+        document.getElementById('lAge').value = lead.age;
+        document.getElementById('lPhone').value = lead.phone;
+        document.getElementById('lSource').value = lead.source;
+        document.getElementById('lTrial').value = lead.has_trial ? 'ha' : 'yoq';
+
+        // 1. O'qituvchini tanlaymiz
+        document.getElementById('lTeacher').value = lead.teacher_name;
+        
+        // 2. O'qituvchi tanlangani uchun, majburan guruhlarni yangilaymiz
+        updateGroupsByTeacher(); 
+
+        // 3. Guruhlar yuklangandan so'ng, lidning guruhini tanlab qo'yamiz
+        if (lead.group_id) {
+            document.getElementById('lGroup').value = lead.group_id;
+        }
+
+        document.querySelector('.modal-box h3').innerText = "Lidni tahrirlash";
+        openModal();
+    }
+
+    // 6. Saqlash (Save)
+    async function saveLead() {
+        const leadData = {
+            name: document.getElementById('lName').value,
+            age: document.getElementById('lAge').value,
+            phone: document.getElementById('lPhone').value, // Phone yuboriladi
+            group_id: document.getElementById('lGroup').value, // Kurs nomi emas, Guruh ID si
+            source: document.getElementById('lSource').value,
+            teacher: document.getElementById('lTeacher').value,
+            trial: document.getElementById('lTrial').value
+        };
+
+        if(!leadData.name || !leadData.phone) return alert("Ism va telefon raqam majburiy!");
+        if(!leadData.group_id) return alert("Iltimos, guruhni tanlang!");
+
+        let url = currentEditId ? `/api/edit-lead/${currentEditId}/` : '/api/add-lead/';
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(leadData)
+            });
+
+            if (response.ok) {
+                location.reload(); 
+            } else {
+                const errorData = await response.json();
+                alert("Xatolik: " + errorData.message);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Server bilan bog'lanishda xatolik");
+        }
+    }
+
+    // 7. O'chirish
+    async function deleteLead(id) {
+        if(!confirm("Ushbu lidni o'chirmoqchimisiz?")) return;
+        try {
+            const response = await fetch(`/api/delete-lead/${id}/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (response.ok) location.reload();
+        } catch (error) {
+            alert("O'chirishda xatolik");
+        }
+    }
+
+    // Init
+function init() {
+    loadTeachers();
+    renderLeads();
+    applyFilters(); // Agar qidiruv maydoni bo'sh bo'lmasa, filtrni qo'llaydi
+}
+
+    init();
+
+
+</script>
+
+
+
+
+
+
+    <!-- <script>
+        // --- DATA ---
+        // O'qituvchilar ro'yxati (bazadan)
+        const teachers = ["Dilshodbek", "Dilafruz", "Muharramoy IELTS", "Temur", "Nozimjon", "Habibullo IT", "Belgilanmagan"];
+
+        // Elementlar
+        const modal = document.getElementById('leadModal');
+        const container = document.getElementById('leadsContainer');
+        const totalCountEl = document.getElementById('totalLeads');
+        const trialCountEl = document.getElementById('trialLeads');
+        const teacherSelect = document.getElementById('lTeacher');
+
+        // LocalStorage dan lidlarni olish
+        let leads = JSON.parse(localStorage.getItem('crm_leads')) || [];
+
+        // --- INIT ---
+        function init() {
+            loadTeachers();
+            renderLeads();
+        }
+
+        // 1. Teacherlarni selectga yuklash
+        function loadTeachers() {
+            teacherSelect.innerHTML = '';
+            teachers.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.innerText = t;
+                teacherSelect.appendChild(opt);
+            });
+        }
+
+        // 2. Lidlarni chizish
+        function renderLeads() {
+            container.innerHTML = '';
+            let trialCount = 0;
+
+            leads.forEach((lead, index) => {
+                // Sinov darsini hisoblash
+                if(lead.trial === 'ha') trialCount++;
+
+                const card = document.createElement('div');
+                card.className = 'lead-card';
+                
+                // Status dizayni
+                let statusHtml = lead.trial === 'ha' 
+                    ? `<span class="status-badge status-yes"><i class="fa-solid fa-check"></i> Sinovdan o'tdi</span>`
+                    : `<span class="status-badge status-no"><i class="fa-regular fa-clock"></i> Kutyapti</span>`;
+
+                card.innerHTML = `
+                    <div class="lead-header">
+                        <div>
+                            <div class="lead-name">${lead.name}</div>
+                            <div class="lead-sub">${lead.age} yosh | ${lead.school}</div>
+                        </div>
+                        <span class="lead-source">${lead.source}</span>
+                    </div>
+                    
+                    <div class="lead-details">
+                        <div class="detail-row">
+                            <i class="fa-solid fa-layer-group"></i> <b>Kurs:</b> ${lead.course}
+                        </div>
+                        <div class="detail-row">
+                            <i class="fa-solid fa-chalkboard-user"></i> <b>Ustoz:</b> ${lead.teacher}
+                        </div>
+                    </div>
+
+                    <div class="lead-footer">
+                        ${statusHtml}
+                        <i class="fa-solid fa-trash btn-delete" onclick="deleteLead(${index})" title="O'chirish"></i>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Statistikani yangilash
+            totalCountEl.innerText = leads.length;
+            trialCountEl.innerText = trialCount;
+        }
+
+        // 3. Modal Functions
+        function openModal() { modal.style.display = 'flex'; }
+        function closeModal() { modal.style.display = 'none'; }
+        window.onclick = (e) => { if(e.target == modal) closeModal(); }
+
+        // 4. Saqlash (Save)
+       async function saveLead() {
+    // 1. Ma'lumotlarni yig'ish
+    const leadData = {
+        name: document.getElementById('lName').value,
+        age: document.getElementById('lAge').value,
+        school: document.getElementById('lSchool').value,
+        course: document.getElementById('lCourse').value,
+        source: document.getElementById('lSource').value,
+        teacher: document.getElementById('lTeacher').value,
+        trial: document.getElementById('lTrial').value
+    };
+
+    // 2. Validatsiya
+    if(!leadData.name || !leadData.age) {
+        alert("Ism va yosh kiritilishi shart!");
+        return;
+    }
+
+    try {
+        // 3. Django Backendga yuborish
+        const response = await fetch('/api/add-lead/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Agar CSRF ishlatsangiz: 'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(leadData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Muvaffaqiyatli saqlandi!");
+            
+            // LocalStorage-ga ham vaqtincha qo'shib turish (sahifani yangilamaslik uchun)
+            leads.unshift(leadData);
+            localStorage.setItem('crm_leads', JSON.stringify(leads));
+
+            renderLeads();
+            closeModal();
+            
+            // Formani tozalash
+            document.querySelectorAll('.modal-box input').forEach(i => i.value = '');
+        } else {
+            alert("Xatolik: " + result.message);
+        }
+    } catch (error) {
+        console.error("Backend bilan bog'lanishda xato:", error);
+        alert("Server bilan bog'lanib bo'lmadi!");
+    }
+}
+        init();
+    </script> -->
+</body>
+</html>
